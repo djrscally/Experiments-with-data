@@ -1,4 +1,4 @@
-#SQL Merge Speed Tests
+# SQL Merge Speed Tests
 
 This was an experiment to see the speed of various methods of merging data in SQL tables. The quintessential scenario is where an input dataset needs merging with a production table to achieve three objectives:
 
@@ -13,6 +13,19 @@ There's a bunch of different methods we can use to do this:
 
 The conventional wisdom is that #2 is better than #1 because one command is only going to iterate over the data once, and will almost always therefore be faster (unless there's something really weird going on). I will confirm that, then I want to see which of the two upsert methods works faster. I might also experiment with the "_if necessary_" part of updating data; I.E. is it ever the case that it's better to check somehow if a row needs updating before going ahead and doing it, or should you always just assume that if a pk is matched in a destination table, the row should be updated.
 
-###Software and data
+### Software and data
 
 I'm going to try this out with both MySQL and MSSQL - because I use both (MySQL for home projects and MSSQL at work). I will be using the salaries table from the [Employees](https://dev.mysql.com/doc/employee/en/) sample dataset.
+
+### Results
+
+#### MySQL
+
+`insert ... on duplicate key update` won by a country mile; the margin by which it won surprised me a little:
+
+|: # :|: Time   :|: Action                         :|: Message               :|: Duration / Fetch :|
+| --- | -------- | -------------------------------- | ----------------------- | ------------------ |
+| 56  | 21:07:48 | call pInsertOnDuplicateKeyUpdate | 2844047 row(s) affected | 10.819 sec         |
+| 57  | 21:09:31 | call pFlushAndFill               | 2844047 row(s) affected | 25.178 sec         |
+
+That's only one run through, but a whole bunch of repeats didn't change the times more than a few milliseconds. So; pretty conclusive. Flush and fill sucks, use `insert on duplicate key update`.

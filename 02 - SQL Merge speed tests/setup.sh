@@ -13,6 +13,5 @@ echo "Fetching employees sample database"
 git clone https://github.com/datacharmer/test_db.git
 echo "Done."
 
-echo "Please elevate to sudo to guarantee permissions to install the database."
-sudo $MYSQL_BIN < ./test_db/employees.sql
-echo "Database installed."
+read -p "Please enter the username for the MySQL database now: " db_un
+$MYSQL_BIN -u $DB_UN -p < ./test_db/employees.sql
